@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heights · Review Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #000071;
+      --electric:   #3061E7;
+      --mint:       #E5FFE1;
+      --offwhite:   #FFF9EF;
+      --green:      #00B684;
+      --skyblue:    #E2FAFF;
+      --periwinkle: #628BFF;
+      --red:        #E05252;
+      --text-dark:  #0A0A2E;
+      --text-muted: #5A5A8A;
+      --border:     rgba(0,0,113,0.12);
+      --card-shadow: 0 2px 12px rgba(0,0,113,0.10);
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--offwhite);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────────────── */
+    .app-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* ── Header ──────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 36px 0 32px;
+      gap: 16px;
+    }
+
+    .header-left h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(36px, 5vw, 56px);
+      line-height: 1;
+      letter-spacing: -0.5px;
+      color: var(--offwhite);
+    }
+
+    .header-left h1 span {
+      color: var(--electric);
+    }
+
+    .header-left p {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,249,239,0.55);
+      letter-spacing: 0.02em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    #refresh-btn {
+      background: transparent;
+      border: 1.5px solid rgba(255,249,239,0.2);
+      color: rgba(255,249,239,0.6);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    #refresh-btn:hover { border-color: rgba(255,249,239,0.5); color: var(--offwhite); }
+    #refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #refresh-btn svg { width: 14px; height: 14px; }
+
+    /* ── Stats Bar ───────────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: rgba(255,249,239,0.06);
+      border: 1px solid rgba(255,249,239,0.10);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,249,239,0.7);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .stat-pill .stat-value {
+      color: var(--offwhite);
+      font-weight: 700;
+    }
+
+    .stat-pill .stat-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.5;
+    }
+
+    /* ── Search ──────────────────────────────────────────────────────── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(0,0,113,0.4);
+      pointer-events: none;
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 18px 56px 18px 56px;
+      border-radius: 14px;
+      border: none;
+      background: var(--offwhite);
+      color: var(--text-dark);
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      outline: none;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+      transition: box-shadow 0.15s;
+    }
+    #search-input:focus { box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 0 0 3px rgba(48,97,231,0.4); }
+    #search-input::placeholder { color: rgba(0,0,113,0.35); }
+
+    .search-clear {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,113,0.12);
+      border: none;
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--navy);
+      font-size: 16px;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .search-clear:hover { background: rgba(0,0,113,0.2); }
+    .search-clear.visible { display: flex; }
+
+    /* ── Filters ─────────────────────────────────────────────────────── */
+    .filters-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,249,239,0.45);
+      margin-right: 2px;
+    }
+
+    .filter-btn {
+      background: rgba(255,249,239,0.07);
+      border: 1.5px solid rgba(255,249,239,0.12);
+      color: rgba(255,249,239,0.65);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: rgba(255,249,239,0.3); color: var(--offwhite); }
+    .filter-btn.active { background: var(--offwhite); border-color: var(--offwhite); color: var(--navy); }
+
+    .filter-btn[data-value="positive"].active  { background: var(--green); border-color: var(--green); color: #fff; }
+    .filter-btn[data-value="negative"].active  { background: var(--red); border-color: var(--red); color: #fff; }
+    .filter-btn[data-value="trustpilot"].active { background: var(--electric); border-color: var(--electric); color: #fff; }
+    .filter-btn[data-value="okendo"].active    { background: var(--periwinkle); border-color: var(--periwinkle); color: #fff; }
+
+    .filter-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,249,239,0.15);
+    }
+
+    /* ── Results bar ─────────────────────────────────────────────────── */
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      min-height: 24px;
+    }
+
+    .results-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,249,239,0.55);
+    }
+    .results-count strong { color: var(--offwhite); }
+
+    .results-avg {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,249,239,0.5);
+    }
+    .results-avg span { color: #F5A623; }
+
+    /* ── Grid ────────────────────────────────────────────────────────── */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Card ────────────────────────────────────────────────────────── */
+    .review-card {
+      background: var(--offwhite);
+      border-radius: 16px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .review-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0,0,113,0.18);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-badges {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-trustpilot  { background: var(--electric); color: #fff; }
+    .badge-okendo      { background: var(--periwinkle); color: #fff; }
+    .badge-positive    { background: #E6F9F2; color: #007A5A; }
+    .badge-negative    { background: #FDEAEA; color: #B33A3A; }
+    .badge-verified    { background: var(--skyblue); color: #0057A8; }
+
+    .card-stars {
+      font-size: 16px;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .star-filled { color: #F5A623; }
+    .star-empty  { color: #D0CBB8; }
+
+    .card-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-style: italic;
+      line-height: 1.35;
+    }
+
+    .card-product {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: var(--navy);
+      background: rgba(0,0,113,0.07);
+      border-radius: 6px;
+      padding: 3px 8px;
+      width: fit-content;
+    }
+
+    .card-body {
+      font-size: 14px;
+      font-weight: 400;
+      color: #2A2A5A;
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    .card-body mark {
+      background: var(--electric);
+      color: #fff;
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-date {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* ── Loading / Skeleton ──────────────────────────────────────────── */
+    #loading-state {
+      text-align: center;
+      padding: 80px 0;
+    }
+
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(255,249,239,0.15);
+      border-top-color: var(--electric);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,249,239,0.6);
+      margin-bottom: 8px;
+    }
+
+    .loading-sub {
+      font-size: 13px;
+      color: rgba(255,249,239,0.35);
+    }
+
+    .progress-bar-wrap {
+      width: 240px;
+      margin: 16px auto 0;
+      background: rgba(255,249,239,0.1);
+      border-radius: 100px;
+      height: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--electric);
+      border-radius: 100px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .skeleton-card {
+      background: rgba(255,249,239,0.05);
+      border-radius: 16px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .skel {
+      background: linear-gradient(90deg, rgba(255,249,239,0.06) 25%, rgba(255,249,239,0.12) 50%, rgba(255,249,239,0.06) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ── Error State ─────────────────────────────────────────────────── */
+    #error-state {
+      text-align: center;
+      padding: 80px 0;
+    }
+
+    .error-icon { font-size: 48px; margin-bottom: 16px; }
+    .error-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .error-msg { font-size: 14px; color: rgba(255,249,239,0.55); margin-bottom: 24px; }
+
+    .btn-retry {
+      background: var(--electric);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-retry:hover { opacity: 0.88; }
+
+    /* ── Empty State ─────────────────────────────────────────────────── */
+    #empty-state {
+      text-align: center;
+      padding: 80px 0;
+      display: none;
+    }
+
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+    .empty-title { font-size: 18px; font-weight: 700; color: rgba(255,249,239,0.5); margin-bottom: 8px; }
+    .empty-sub { font-size: 14px; color: rgba(255,249,239,0.3); }
+
+    /* ── Load More ───────────────────────────────────────────────────── */
+    .load-more-wrap {
+      text-align: center;
+      padding: 32px 0 0;
+    }
+
+    #load-more-btn {
+      background: transparent;
+      border: 1.5px solid rgba(255,249,239,0.2);
+      color: rgba(255,249,239,0.7);
+      padding: 12px 28px;
+      border-radius: 100px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    #load-more-btn:hover { border-color: rgba(255,249,239,0.45); color: var(--offwhite); }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .app-wrap { padding: 0 16px 60px; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .reviews-grid { grid-template-columns: 1fr; }
+      .filters-row { gap: 12px; }
+      .stats-bar { gap: 8px; }
+    }
+
+    /* ── Utility ─────────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <h1>Heights <span>Review Search</span></h1>
+      <p>Customer Care · Unified review database</p>
+    </div>
+    <div class="header-right">
+      <div id="last-updated" style="font-size:12px;color:rgba(255,249,239,0.35);font-weight:500;"></div>
+      <button id="refresh-btn" title="Refresh reviews">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.5 2.5A7 7 0 1 0 14 8"/>
+          <polyline points="14 2 14 6 10 6"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats bar (populated by JS) -->
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="9" r="6"/>
+      <line x1="15" y1="15" x2="19" y2="19"/>
+    </svg>
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Search reviews by keyword, e.g. "sleep", "energy", "Alex"…"
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <button class="search-clear" id="search-clear" aria-label="Clear search">×</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <div class="filter-group">
+      <span class="filter-label">Source</span>
+      <button class="filter-btn active" data-filter="source" data-value="all">All</button>
+      <button class="filter-btn" data-filter="source" data-value="trustpilot">Trustpilot</button>
+      <button class="filter-btn" data-filter="source" data-value="okendo">Okendo</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">Sentiment</span>
+      <button class="filter-btn active" data-filter="sentiment" data-value="all">All</button>
+      <button class="filter-btn" data-filter="sentiment" data-value="positive">Positive (4–5★)</button>
+      <button class="filter-btn" data-filter="sentiment" data-value="negative">Negative (1–3★)</button>
+    </div>
+  </div>
+
+  <!-- Results bar -->
+  <div class="results-bar" id="results-bar" style="display:none;">
+    <div class="results-count" id="results-count"></div>
+    <div class="results-avg" id="results-avg"></div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading-state">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loading-text">Loading reviews…</div>
+    <div class="loading-sub" id="loading-sub">Fetching from Okendo and Trustpilot</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+    <div class="skeleton-grid" id="skeleton-grid"></div>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" class="hidden">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title">Couldn't load reviews</div>
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-retry" onclick="retryLoad()">Try again</button>
+  </div>
+
+  <!-- Reviews -->
+  <div id="reviews-section" class="hidden">
+    <div class="reviews-grid" id="reviews-grid"></div>
+    <div class="load-more-wrap">
+      <div id="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No reviews match your search</div>
+        <div class="empty-sub">Try different keywords or adjust your filters</div>
+      </div>
+      <button id="load-more-btn" class="hidden">Load more</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── State ─────────────────────────────────────────────────────────────────
+  let allReviews = [];
+  let filtered   = [];
+  let shown      = 0;
+  const PAGE_SIZE = 48;
+
+  let query           = '';
+  let sourceFilter    = 'all';
+  let sentimentFilter = 'all';
+  let searchDebounce  = null;
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  const searchInput   = document.getElementById('search-input');
+  const searchClear   = document.getElementById('search-clear');
+  const statsBar      = document.getElementById('stats-bar');
+  const loadingState  = document.getElementById('loading-state');
+  const loadingText   = document.getElementById('loading-text');
+  const loadingSub    = document.getElementById('loading-sub');
+  const progressBar   = document.getElementById('progress-bar');
+  const errorState    = document.getElementById('error-state');
+  const reviewsSection= document.getElementById('reviews-section');
+  const reviewsGrid   = document.getElementById('reviews-grid');
+  const resultsBar    = document.getElementById('results-bar');
+  const resultsCount  = document.getElementById('results-count');
+  const resultsAvg    = document.getElementById('results-avg');
+  const emptyState    = document.getElementById('empty-state');
+  const loadMoreBtn   = document.getElementById('load-more-btn');
+  const refreshBtn    = document.getElementById('refresh-btn');
+  const lastUpdated   = document.getElementById('last-updated');
+  const skeletonGrid  = document.getElementById('skeleton-grid');
+
+  // ── Skeletons ─────────────────────────────────────────────────────────────
+  function renderSkeletons(count = 6) {
+    skeletonGrid.innerHTML = Array.from({ length: count }, () => `
+      <div class="skeleton-card">
+        <div style="display:flex;gap:8px;justify-content:space-between">
+          <div style="display:flex;gap:6px">
+            <div class="skel" style="width:80px;height:20px"></div>
+            <div class="skel" style="width:60px;height:20px"></div>
+          </div>
+          <div class="skel" style="width:80px;height:20px"></div>
+        </div>
+        <div class="skel" style="height:22px;width:55%"></div>
+        <div class="skel" style="height:16px;width:70%"></div>
+        <div class="skel" style="height:14px"></div>
+        <div class="skel" style="height:14px;width:85%"></div>
+        <div class="skel" style="height:14px;width:60%"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <div class="skel" style="width:100px;height:14px"></div>
+          <div class="skel" style="width:70px;height:14px"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Data loading ──────────────────────────────────────────────────────────
+  let pollTimer = null;
+
+  async function loadReviews() {
+    showLoading();
+    renderSkeletons();
+    pollForData();
+  }
+
+  async function pollForData() {
+    try {
+      const res  = await fetch('/api/reviews');
+      const data = await res.json();
+
+      if (data.status === 'ready') {
+        allReviews = data.reviews || [];
+        clearInterval(pollTimer);
+        pollTimer = null;
+
+        if (data.loadedAt) {
+          const d = new Date(data.loadedAt);
+          lastUpdated.textContent = `Updated ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        showReviews();
+        renderGlobalStats();
+        applyFilters();
+      } else if (data.status === 'error') {
+        clearInterval(pollTimer);
+        showError(data.error || 'Unknown error');
+      } else {
+        // still loading — update progress
+        const p = data.progress || {};
+        const total = (p.okendo || 0) + (p.slack || 0);
+        loadingText.textContent = `Loading reviews… ${total.toLocaleString()} so far`;
+        if (p.okendo > 0) {
+          const pct = Math.min(95, (p.okendo / 12000) * 100);
+          progressBar.style.width = pct + '%';
+        }
+
+        if (!pollTimer) {
+          pollTimer = setInterval(pollForData, 2500);
+        }
+      }
+    } catch (e) {
+      showError(e.message);
+    }
+  }
+
+  async function retryLoad() {
+    hideError();
+    await loadReviews();
+  }
+
+  // ── Visibility helpers ────────────────────────────────────────────────────
+  function showLoading() {
+    loadingState.classList.remove('hidden');
+    errorState.classList.add('hidden');
+    reviewsSection.classList.add('hidden');
+    resultsBar.style.display = 'none';
+  }
+
+  function showReviews() {
+    loadingState.classList.add('hidden');
+    errorState.classList.add('hidden');
+    reviewsSection.classList.remove('hidden');
+    resultsBar.style.display = 'flex';
+  }
+
+  function showError(msg) {
+    loadingState.classList.add('hidden');
+    reviewsSection.classList.add('hidden');
+    errorState.classList.remove('hidden');
+    document.getElementById('error-msg').textContent = msg;
+  }
+
+  function hideError() {
+    errorState.classList.add('hidden');
+  }
+
+  // ── Global stats ──────────────────────────────────────────────────────────
+  function renderGlobalStats() {
+    const tp  = allReviews.filter(r => r.source === 'trustpilot').length;
+    const ok  = allReviews.filter(r => r.source === 'okendo').length;
+    const avg = allReviews.length
+      ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1)
+      : '—';
+
+    const oldest = allReviews.length
+      ? new Date(allReviews[allReviews.length - 1].date).getFullYear()
+      : '—';
+
+    statsBar.innerHTML = `
+      <div class="stat-pill"><span class="stat-value">${allReviews.length.toLocaleString()}</span> total reviews</div>
+      <div class="stat-pill"><span class="stat-value">${avg}★</span> avg rating</div>
+      <div class="stat-pill" style="color:var(--electric)"><span class="stat-dot"></span><span class="stat-value">${tp.toLocaleString()}</span> Trustpilot</div>
+      <div class="stat-pill" style="color:var(--periwinkle)"><span class="stat-dot"></span><span class="stat-value">${ok.toLocaleString()}</span> Okendo</div>
+      <div class="stat-pill">Since <span class="stat-value">${oldest}</span></div>
+    `;
+  }
+
+  // ── Filtering ─────────────────────────────────────────────────────────────
+  function applyFilters() {
+    const q = query.toLowerCase().trim();
+
+    filtered = allReviews.filter(r => {
+      if (sourceFilter    !== 'all' && r.source    !== sourceFilter)    return false;
+      if (sentimentFilter !== 'all' && r.sentiment !== sentimentFilter) return false;
+      if (q) {
+        const hay = `${r.name} ${r.title} ${r.body}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    shown = 0;
+    reviewsGrid.innerHTML = '';
+    emptyState.style.display = 'none';
+    renderResultsBar();
+    renderNextPage();
+  }
+
+  function renderResultsBar() {
+    const avg = filtered.length
+      ? (filtered.reduce((s, r) => s + r.rating, 0) / filtered.length).toFixed(1)
+      : '—';
+
+    if (query) {
+      resultsCount.innerHTML = `<strong>${filtered.length.toLocaleString()}</strong> result${filtered.length !== 1 ? 's' : ''} for <strong>"${escHtml(query)}"</strong>`;
+    } else {
+      resultsCount.innerHTML = `<strong>${filtered.length.toLocaleString()}</strong> review${filtered.length !== 1 ? 's' : ''}`;
+    }
+    resultsAvg.innerHTML = `<span>${avg}</span>★ avg`;
+  }
+
+  // ── Rendering ─────────────────────────────────────────────────────────────
+  function renderNextPage() {
+    const slice = filtered.slice(shown, shown + PAGE_SIZE);
+    const frag  = document.createDocumentFragment();
+
+    slice.forEach(r => {
+      const el = createCard(r);
+      frag.appendChild(el);
+    });
+
+    reviewsGrid.appendChild(frag);
+    shown += slice.length;
+
+    if (shown === 0 && filtered.length === 0) {
+      emptyState.style.display = 'block';
+      loadMoreBtn.classList.add('hidden');
+    } else if (shown >= filtered.length) {
+      loadMoreBtn.classList.add('hidden');
+    } else {
+      loadMoreBtn.classList.remove('hidden');
+      const rem = filtered.length - shown;
+      loadMoreBtn.textContent = `Load ${Math.min(PAGE_SIZE, rem).toLocaleString()} more  ·  ${rem.toLocaleString()} remaining`;
+    }
+  }
+
+  function createCard(r) {
+    const div = document.createElement('div');
+    div.className = 'review-card';
+
+    const sourceBadge = r.source === 'trustpilot'
+      ? '<span class="badge badge-trustpilot">Trustpilot</span>'
+      : '<span class="badge badge-okendo">Okendo</span>';
+
+    const sentBadge = r.sentiment === 'positive'
+      ? '<span class="badge badge-positive">Positive</span>'
+      : '<span class="badge badge-negative">Negative</span>';
+
+    const verBadge = r.verified
+      ? '<span class="badge badge-verified">✓ Verified</span>'
+      : '';
+
+    const product = r.product
+      ? `<div class="card-product">${escHtml(r.product)}</div>`
+      : '';
+
+    const body  = highlight(escHtml(r.body),  query);
+    const title = highlight(escHtml(r.title), query);
+    const name  = highlight(escHtml(r.name),  query);
+
+    div.innerHTML = `
+      <div class="card-top">
+        <div class="card-badges">${sourceBadge}${sentBadge}</div>
+        <div class="card-stars">${renderStars(r.rating)}</div>
+      </div>
+      <div class="card-name">${name}</div>
+      <div class="card-title">&ldquo;${title}&rdquo;</div>
+      ${product}
+      <div class="card-body">${body}</div>
+      <div class="card-footer">
+        <span class="card-date">${formatDate(r.date)}</span>
+        ${verBadge}
+      </div>
+    `;
+    return div;
+  }
+
+  function renderStars(n) {
+    let s = '';
+    for (let i = 1; i <= 5; i++) {
+      s += `<span class="${i <= n ? 'star-filled' : 'star-empty'}">${i <= n ? '★' : '☆'}</span>`;
+    }
+    return s;
+  }
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
+  function escHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function highlight(text, q) {
+    if (!q.trim()) return text;
+    const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>');
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  // ── Event listeners ───────────────────────────────────────────────────────
+  searchInput.addEventListener('input', () => {
+    query = searchInput.value;
+    searchClear.classList.toggle('visible', !!query);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(applyFilters, 120);
+  });
+
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { searchInput.value = ''; query = ''; searchClear.classList.remove('visible'); applyFilters(); }
+  });
+
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    query = '';
+    searchClear.classList.remove('visible');
+    searchInput.focus();
+    applyFilters();
+  });
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      const value  = btn.dataset.value;
+      document.querySelectorAll(`.filter-btn[data-filter="${filter}"]`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (filter === 'source')    sourceFilter    = value;
+      if (filter === 'sentiment') sentimentFilter = value;
+      applyFilters();
+    });
+  });
+
+  loadMoreBtn.addEventListener('click', renderNextPage);
+
+  refreshBtn.addEventListener('click', async () => {
+    if (refreshBtn.disabled) return;
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = 'Refreshing…';
+    try {
+      await fetch('/api/refresh', { method: 'POST' });
+      allReviews = [];
+      statsBar.innerHTML = '';
+      await loadReviews();
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = `
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+          <path d="M13.5 2.5A7 7 0 1 0 14 8"/><polyline points="14 2 14 6 10 6"/>
+        </svg>
+        Refresh
+      `;
+    }
+  });
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  loadReviews();
+</script>
+</body>
+</html>
