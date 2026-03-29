@@ -1,0 +1,47 @@
+name: Build & Deploy Review Search
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # rebuild every hour
+  push:
+    branches: [main]
+  workflow_dispatch:        # allow manual run from GitHub UI
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Fetch reviews & build static site
+        env:
+          OKENDO_API_KEY: ${{ secrets.OKENDO_API_KEY }}
+          SLACK_TOKEN:    ${{ secrets.SLACK_TOKEN }}
+        run: python build.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

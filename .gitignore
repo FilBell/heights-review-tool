@@ -1,4 +1,5 @@
 .env
 cache/
+dist/
 __pycache__/
 *.pyc

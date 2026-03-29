@@ -544,6 +544,8 @@
   <!-- Stats bar (populated by JS) -->
   <div class="stats-bar" id="stats-bar"></div>
 
+  <!-- DATA_INJECTION_POINT -->
+
   <!-- Search -->
   <div class="search-wrap">
     <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -954,7 +956,20 @@
   });
 
   // ── Boot ──────────────────────────────────────────────────────────────────
-  loadReviews();
+  if (window.__HEIGHTS_REVIEWS__) {
+    // Static build — data already embedded
+    allReviews = window.__HEIGHTS_REVIEWS__;
+    if (refreshBtn) refreshBtn.style.display = 'none';
+    if (window.__HEIGHTS_BUILT_AT__) {
+      const d = new Date(window.__HEIGHTS_BUILT_AT__);
+      lastUpdated.textContent = `Updated ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+    }
+    showReviews();
+    renderGlobalStats();
+    applyFilters();
+  } else {
+    loadReviews();
+  }
 </script>
 </body>
 </html>
