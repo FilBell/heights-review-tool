@@ -173,10 +173,44 @@ def get_message_text(m):
 
 
 def parse_trustpilot(message):
-    text = get_message_text(message)
-    if not text.strip() or not re.search(r"[★☆]", text):
-        return None
     try:
+        # Trustpilot Slack app uses legacy attachments format:
+        # author_name = reviewer, title = review title, text = body, footer = "★★★★★ Verified"
+        attachments = message.get("attachments") or []
+        if attachments:
+            a      = attachments[0]
+            name   = (a.get("author_name") or "").strip()
+            title  = (a.get("title") or "").strip()
+            body   = (a.get("text") or "").strip()
+            footer = a.get("footer") or ""
+            if not name or not body:
+                return None
+            star_match = re.search(r"([★☆]{1,5})", footer)
+            stars  = star_match.group(1) if star_match else ""
+            rating = stars.count("★")
+            if not rating:
+                return None
+            verified = bool(re.search(r"\bVerified\b", footer, re.IGNORECASE)) and \
+                       not re.search(r"Not verified", footer, re.IGNORECASE)
+            ts   = float(message.get("ts", 0))
+            date = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+            return {
+                "id":        f"slack_{message['ts']}",
+                "source":    "trustpilot",
+                "name":      name,
+                "title":     title,
+                "body":      body,
+                "rating":    rating,
+                "date":      date,
+                "verified":  verified,
+                "product":   "",
+                "sentiment": "positive" if rating >= 4 else "negative",
+            }
+
+        # Fallback: Block Kit text parsing
+        text = get_message_text(message)
+        if not text.strip() or not re.search(r"[★☆]", text):
+            return None
         bold_matches = re.findall(r"\*([^*\n]+)\*", text)
         if len(bold_matches) < 2:
             return None
@@ -189,7 +223,8 @@ def parse_trustpilot(message):
         rating = stars.count("★")
         if not rating:
             return None
-        verified = bool(re.search(r"\bVerified\b", text)) and not re.search(r"Not verified", text, re.IGNORECASE)
+        verified = bool(re.search(r"\bVerified\b", text)) and \
+                   not re.search(r"Not verified", text, re.IGNORECASE)
         lines = text.split("\n")
         star_line_idx = next((i for i, l in enumerate(lines) if re.search(r"[★☆]", l)), len(lines))
         bold_count = 0
