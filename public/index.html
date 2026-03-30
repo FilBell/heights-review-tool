@@ -328,6 +328,64 @@
       text-transform: uppercase;
     }
 
+    /* ── Date range ──────────────────────────────────────────────────── */
+    .date-range-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .date-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .date-input-wrap input[type="date"] {
+      background: rgba(255,249,239,0.07);
+      border: 1.5px solid rgba(255,249,239,0.12);
+      color: rgba(255,249,239,0.65);
+      padding: 5px 10px;
+      border-radius: 100px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      outline: none;
+      width: 140px;
+      color-scheme: dark;
+    }
+    .date-input-wrap input[type="date"]:hover { border-color: rgba(255,249,239,0.3); color: var(--offwhite); }
+    .date-input-wrap input[type="date"]:focus { border-color: rgba(255,249,239,0.4); color: var(--offwhite); }
+    .date-input-wrap input[type="date"].has-value { background: rgba(255,249,239,0.13); border-color: rgba(255,249,239,0.35); color: var(--offwhite); }
+
+    .date-sep {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,249,239,0.3);
+      padding: 0 2px;
+    }
+
+    #date-clear {
+      background: rgba(255,249,239,0.08);
+      border: 1.5px solid rgba(255,249,239,0.12);
+      color: rgba(255,249,239,0.5);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    #date-clear:hover { background: rgba(255,249,239,0.15); color: var(--offwhite); }
+    #date-clear.visible { display: flex; }
+
     /* ── Results bar ─────────────────────────────────────────────────── */
     .results-bar {
       display: flex;
@@ -687,6 +745,20 @@
         </div>
       </div>
     </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">Date</span>
+      <div class="date-range-group">
+        <div class="date-input-wrap">
+          <input type="date" id="date-from" title="From date">
+        </div>
+        <span class="date-sep">→</span>
+        <div class="date-input-wrap">
+          <input type="date" id="date-to" title="To date">
+        </div>
+        <button id="date-clear" title="Clear dates">×</button>
+      </div>
+    </div>
   </div>
 
   <!-- Results bar -->
@@ -740,6 +812,8 @@
   let sourceFilter    = 'all';
   let sentimentFilter = 'all';
   let selectedProducts = new Set(); // empty = all
+  let dateFrom = '';
+  let dateTo   = '';
   let searchDebounce  = null;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
@@ -761,6 +835,9 @@
   const refreshBtn    = document.getElementById('refresh-btn');
   const lastUpdated   = document.getElementById('last-updated');
   const skeletonGrid  = document.getElementById('skeleton-grid');
+  const dateFromInput = document.getElementById('date-from');
+  const dateToInput   = document.getElementById('date-to');
+  const dateClear     = document.getElementById('date-clear');
   const productBtn      = document.getElementById('product-btn');
   const productBtnLabel = document.getElementById('product-btn-label');
   const productPanel    = document.getElementById('product-panel');
@@ -951,6 +1028,8 @@
       if (sourceFilter    !== 'all' && r.source    !== sourceFilter)    return false;
       if (sentimentFilter !== 'all' && r.sentiment !== sentimentFilter) return false;
       if (selectedProducts.size > 0 && !selectedProducts.has(r.product)) return false;
+      if (dateFrom && r.date.slice(0, 10) < dateFrom) return false;
+      if (dateTo   && r.date.slice(0, 10) > dateTo)   return false;
       if (q) {
         const hay = `${r.name} ${r.title} ${r.body}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -1099,6 +1178,33 @@
       if (filter === 'sentiment') sentimentFilter = value;
       applyFilters();
     });
+  });
+
+  function updateDateClear() {
+    const active = !!(dateFrom || dateTo);
+    dateClear.classList.toggle('visible', active);
+    dateFromInput.classList.toggle('has-value', !!dateFrom);
+    dateToInput.classList.toggle('has-value', !!dateTo);
+  }
+
+  dateFromInput.addEventListener('change', () => {
+    dateFrom = dateFromInput.value;
+    updateDateClear();
+    applyFilters();
+  });
+
+  dateToInput.addEventListener('change', () => {
+    dateTo = dateToInput.value;
+    updateDateClear();
+    applyFilters();
+  });
+
+  dateClear.addEventListener('click', () => {
+    dateFrom = dateTo = '';
+    dateFromInput.value = '';
+    dateToInput.value = '';
+    updateDateClear();
+    applyFilters();
   });
 
   loadMoreBtn.addEventListener('click', renderNextPage);
