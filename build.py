@@ -99,6 +99,15 @@ def fetch_all_slack():
             break
 
     log.info(f"[Slack] {len(messages)} total messages")
+
+    # Debug: log unique bot names so we can identify the Trustpilot bot
+    bot_names = set()
+    for m in messages:
+        name = (m.get("username") or (m.get("bot_profile") or {}).get("name") or m.get("user") or "")
+        if name:
+            bot_names.add(name)
+    log.info(f"[Slack] unique senders: {sorted(bot_names)}")
+
     reviews = [r for r in (parse_trustpilot(m) for m in messages if is_trustpilot(m)) if r]
     log.info(f"[Slack] {len(reviews)} Trustpilot reviews parsed")
     return reviews
