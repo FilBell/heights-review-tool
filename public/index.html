@@ -234,27 +234,99 @@
       background: rgba(255,249,239,0.15);
     }
 
-    #product-select {
+    .product-dropdown {
+      position: relative;
+    }
+
+    #product-btn {
       background: rgba(255,249,239,0.07);
       border: 1.5px solid rgba(255,249,239,0.12);
       color: rgba(255,249,239,0.65);
-      padding: 6px 32px 6px 14px;
+      padding: 6px 14px;
       border-radius: 100px;
       font-family: 'Inter Tight', sans-serif;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,249,239,0.5)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      max-width: 220px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    #product-select:hover { border-color: rgba(255,249,239,0.3); color: var(--offwhite); }
-    #product-select.active { background-color: var(--offwhite); border-color: var(--offwhite); color: var(--navy); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(0,0,113,0.5)' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); }
-    #product-select option { background: #0a0a3a; color: var(--offwhite); font-weight: 500; }
+    #product-btn:hover { border-color: rgba(255,249,239,0.3); color: var(--offwhite); }
+    #product-btn.active { background: var(--offwhite); border-color: var(--offwhite); color: var(--navy); }
+    #product-btn svg { width: 10px; height: 10px; flex-shrink: 0; transition: transform 0.15s; }
+    #product-btn.open svg { transform: rotate(180deg); }
+
+    #product-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: #0e0e4a;
+      border: 1.5px solid rgba(255,249,239,0.15);
+      border-radius: 12px;
+      padding: 8px 0;
+      min-width: 220px;
+      max-width: 280px;
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #product-panel.open { display: block; }
+
+    .product-panel-search {
+      padding: 6px 10px 8px;
+      border-bottom: 1px solid rgba(255,249,239,0.08);
+      margin-bottom: 4px;
+    }
+    .product-panel-search input {
+      width: 100%;
+      background: rgba(255,249,239,0.07);
+      border: 1px solid rgba(255,249,239,0.12);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 12px;
+      color: var(--offwhite);
+      outline: none;
+    }
+    .product-panel-search input::placeholder { color: rgba(255,249,239,0.3); }
+
+    .product-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,249,239,0.75);
+      transition: background 0.1s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-option:hover { background: rgba(255,249,239,0.07); color: var(--offwhite); }
+    .product-option input[type="checkbox"] {
+      accent-color: var(--electric);
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .product-option.clear-opt {
+      border-bottom: 1px solid rgba(255,249,239,0.08);
+      margin-bottom: 4px;
+      padding-bottom: 10px;
+      font-weight: 700;
+      color: rgba(255,249,239,0.45);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
 
     /* ── Results bar ─────────────────────────────────────────────────── */
     .results-bar {
@@ -602,9 +674,18 @@
     <div class="filter-divider"></div>
     <div class="filter-group">
       <span class="filter-label">Product</span>
-      <select id="product-select">
-        <option value="all">All products</option>
-      </select>
+      <div class="product-dropdown">
+        <button id="product-btn" type="button">
+          <span id="product-btn-label">All products</span>
+          <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 1 5 5 9 1"/></svg>
+        </button>
+        <div id="product-panel">
+          <div class="product-panel-search">
+            <input id="product-search" type="text" placeholder="Search products…" autocomplete="off">
+          </div>
+          <div id="product-options"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -658,7 +739,7 @@
   let query           = '';
   let sourceFilter    = 'all';
   let sentimentFilter = 'all';
-  let productFilter   = 'all';
+  let selectedProducts = new Set(); // empty = all
   let searchDebounce  = null;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
@@ -680,7 +761,11 @@
   const refreshBtn    = document.getElementById('refresh-btn');
   const lastUpdated   = document.getElementById('last-updated');
   const skeletonGrid  = document.getElementById('skeleton-grid');
-  const productSelect = document.getElementById('product-select');
+  const productBtn      = document.getElementById('product-btn');
+  const productBtnLabel = document.getElementById('product-btn-label');
+  const productPanel    = document.getElementById('product-panel');
+  const productOptions  = document.getElementById('product-options');
+  const productSearch   = document.getElementById('product-search');
 
   // ── Skeletons ─────────────────────────────────────────────────────────────
   function renderSkeletons(count = 6) {
@@ -809,13 +894,54 @@
   }
 
   // ── Product dropdown ──────────────────────────────────────────────────────
+  let allProducts = [];
+
   function buildProductDropdown() {
-    const products = [...new Set(allReviews.map(r => r.product).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-    const current = productSelect.value;
-    productSelect.innerHTML = '<option value="all">All products</option>' +
-      products.map(p => `<option value="${escHtml(p)}"${p === current ? ' selected' : ''}>${escHtml(p)}</option>`).join('');
-    productSelect.classList.toggle('active', productFilter !== 'all');
+    allProducts = [...new Set(allReviews.map(r => r.product).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    renderProductOptions(allProducts);
   }
+
+  function renderProductOptions(products) {
+    productOptions.innerHTML = products.map(p => `
+      <label class="product-option">
+        <input type="checkbox" value="${escHtml(p)}" ${selectedProducts.has(p) ? 'checked' : ''}>
+        ${escHtml(p)}
+      </label>
+    `).join('');
+    productOptions.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) selectedProducts.add(cb.value);
+        else selectedProducts.delete(cb.value);
+        updateProductBtn();
+        applyFilters();
+      });
+    });
+  }
+
+  function updateProductBtn() {
+    const n = selectedProducts.size;
+    productBtnLabel.textContent = n === 0 ? 'All products' : n === 1 ? [...selectedProducts][0] : `${n} products`;
+    productBtn.classList.toggle('active', n > 0);
+  }
+
+  productBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = productPanel.classList.toggle('open');
+    productBtn.classList.toggle('open', open);
+    if (open) { productSearch.value = ''; renderProductOptions(allProducts); productSearch.focus(); }
+  });
+
+  productSearch.addEventListener('input', () => {
+    const q = productSearch.value.toLowerCase();
+    renderProductOptions(allProducts.filter(p => p.toLowerCase().includes(q)));
+  });
+
+  document.addEventListener('click', e => {
+    if (!productBtn.closest('.product-dropdown').contains(e.target)) {
+      productPanel.classList.remove('open');
+      productBtn.classList.remove('open');
+    }
+  });
 
   // ── Filtering ─────────────────────────────────────────────────────────────
   function applyFilters() {
@@ -824,7 +950,7 @@
     filtered = allReviews.filter(r => {
       if (sourceFilter    !== 'all' && r.source    !== sourceFilter)    return false;
       if (sentimentFilter !== 'all' && r.sentiment !== sentimentFilter) return false;
-      if (productFilter   !== 'all' && r.product   !== productFilter)   return false;
+      if (selectedProducts.size > 0 && !selectedProducts.has(r.product)) return false;
       if (q) {
         const hay = `${r.name} ${r.title} ${r.body}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -973,12 +1099,6 @@
       if (filter === 'sentiment') sentimentFilter = value;
       applyFilters();
     });
-  });
-
-  productSelect.addEventListener('change', () => {
-    productFilter = productSelect.value;
-    productSelect.classList.toggle('active', productFilter !== 'all');
-    applyFilters();
   });
 
   loadMoreBtn.addEventListener('click', renderNextPage);
