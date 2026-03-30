@@ -234,6 +234,28 @@
       background: rgba(255,249,239,0.15);
     }
 
+    #product-select {
+      background: rgba(255,249,239,0.07);
+      border: 1.5px solid rgba(255,249,239,0.12);
+      color: rgba(255,249,239,0.65);
+      padding: 6px 32px 6px 14px;
+      border-radius: 100px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,249,239,0.5)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      max-width: 220px;
+    }
+    #product-select:hover { border-color: rgba(255,249,239,0.3); color: var(--offwhite); }
+    #product-select.active { background-color: var(--offwhite); border-color: var(--offwhite); color: var(--navy); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(0,0,113,0.5)' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); }
+    #product-select option { background: #0a0a3a; color: var(--offwhite); font-weight: 500; }
+
     /* ── Results bar ─────────────────────────────────────────────────── */
     .results-bar {
       display: flex;
@@ -577,6 +599,13 @@
       <button class="filter-btn" data-filter="sentiment" data-value="positive">Positive (4–5★)</button>
       <button class="filter-btn" data-filter="sentiment" data-value="negative">Negative (1–3★)</button>
     </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">Product</span>
+      <select id="product-select">
+        <option value="all">All products</option>
+      </select>
+    </div>
   </div>
 
   <!-- Results bar -->
@@ -629,6 +658,7 @@
   let query           = '';
   let sourceFilter    = 'all';
   let sentimentFilter = 'all';
+  let productFilter   = 'all';
   let searchDebounce  = null;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
@@ -650,6 +680,7 @@
   const refreshBtn    = document.getElementById('refresh-btn');
   const lastUpdated   = document.getElementById('last-updated');
   const skeletonGrid  = document.getElementById('skeleton-grid');
+  const productSelect = document.getElementById('product-select');
 
   // ── Skeletons ─────────────────────────────────────────────────────────────
   function renderSkeletons(count = 6) {
@@ -701,6 +732,7 @@
 
         showReviews();
         renderGlobalStats();
+        buildProductDropdown();
         applyFilters();
       } else if (data.status === 'error') {
         clearInterval(pollTimer);
@@ -776,6 +808,15 @@
     `;
   }
 
+  // ── Product dropdown ──────────────────────────────────────────────────────
+  function buildProductDropdown() {
+    const products = [...new Set(allReviews.map(r => r.product).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const current = productSelect.value;
+    productSelect.innerHTML = '<option value="all">All products</option>' +
+      products.map(p => `<option value="${escHtml(p)}"${p === current ? ' selected' : ''}>${escHtml(p)}</option>`).join('');
+    productSelect.classList.toggle('active', productFilter !== 'all');
+  }
+
   // ── Filtering ─────────────────────────────────────────────────────────────
   function applyFilters() {
     const q = query.toLowerCase().trim();
@@ -783,6 +824,7 @@
     filtered = allReviews.filter(r => {
       if (sourceFilter    !== 'all' && r.source    !== sourceFilter)    return false;
       if (sentimentFilter !== 'all' && r.sentiment !== sentimentFilter) return false;
+      if (productFilter   !== 'all' && r.product   !== productFilter)   return false;
       if (q) {
         const hay = `${r.name} ${r.title} ${r.body}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -933,6 +975,12 @@
     });
   });
 
+  productSelect.addEventListener('change', () => {
+    productFilter = productSelect.value;
+    productSelect.classList.toggle('active', productFilter !== 'all');
+    applyFilters();
+  });
+
   loadMoreBtn.addEventListener('click', renderNextPage);
 
   refreshBtn.addEventListener('click', async () => {
@@ -966,6 +1014,7 @@
     }
     showReviews();
     renderGlobalStats();
+    buildProductDropdown();
     applyFilters();
   } else {
     loadReviews();
