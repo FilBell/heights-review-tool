@@ -100,34 +100,7 @@ def fetch_all_slack():
 
     log.info(f"[Slack] {len(messages)} total messages")
 
-    # Debug: log unique bot names so we can identify the Trustpilot bot
-    bot_names = set()
-    for m in messages:
-        name = (m.get("username") or (m.get("bot_profile") or {}).get("name") or m.get("user") or "")
-        if name:
-            bot_names.add(name)
-    log.info(f"[Slack] unique senders: {sorted(bot_names)}")
-
-    tp_messages = [m for m in messages if is_trustpilot(m)]
-    log.info(f"[Slack] {len(tp_messages)} messages from Trustpilot bot")
-    if tp_messages:
-        sample = tp_messages[0]
-        sample_keys = list(sample.keys())
-        sample_blocks = sample.get("blocks") or []
-        sample_attachments = sample.get("attachments") or []
-        sample_text = (sample.get("text") or "")[:120]
-        extracted = get_message_text(sample)[:200]
-        log.info(f"[Slack][debug] Sample keys: {sample_keys}")
-        log.info(f"[Slack][debug] text field: {repr(sample_text)}")
-        log.info(f"[Slack][debug] blocks count: {len(sample_blocks)}, attachments count: {len(sample_attachments)}")
-        if sample_blocks:
-            log.info(f"[Slack][debug] block types: {[b.get('type') for b in sample_blocks]}")
-            log.info(f"[Slack][debug] first block: {json.dumps(sample_blocks[0])[:300]}")
-        if sample_attachments:
-            log.info(f"[Slack][debug] first attachment keys: {list(sample_attachments[0].keys())}")
-            log.info(f"[Slack][debug] first attachment: {json.dumps(sample_attachments[0])[:300]}")
-        log.info(f"[Slack][debug] extracted text: {repr(extracted)}")
-    reviews = [r for r in (parse_trustpilot(m) for m in tp_messages) if r]
+    reviews = [r for r in (parse_trustpilot(m) for m in messages if is_trustpilot(m)) if r]
     log.info(f"[Slack] {len(reviews)} Trustpilot reviews parsed")
     return reviews
 
