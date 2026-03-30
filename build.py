@@ -108,7 +108,26 @@ def fetch_all_slack():
             bot_names.add(name)
     log.info(f"[Slack] unique senders: {sorted(bot_names)}")
 
-    reviews = [r for r in (parse_trustpilot(m) for m in messages if is_trustpilot(m)) if r]
+    tp_messages = [m for m in messages if is_trustpilot(m)]
+    log.info(f"[Slack] {len(tp_messages)} messages from Trustpilot bot")
+    if tp_messages:
+        sample = tp_messages[0]
+        sample_keys = list(sample.keys())
+        sample_blocks = sample.get("blocks") or []
+        sample_attachments = sample.get("attachments") or []
+        sample_text = (sample.get("text") or "")[:120]
+        extracted = get_message_text(sample)[:200]
+        log.info(f"[Slack][debug] Sample keys: {sample_keys}")
+        log.info(f"[Slack][debug] text field: {repr(sample_text)}")
+        log.info(f"[Slack][debug] blocks count: {len(sample_blocks)}, attachments count: {len(sample_attachments)}")
+        if sample_blocks:
+            log.info(f"[Slack][debug] block types: {[b.get('type') for b in sample_blocks]}")
+            log.info(f"[Slack][debug] first block: {json.dumps(sample_blocks[0])[:300]}")
+        if sample_attachments:
+            log.info(f"[Slack][debug] first attachment keys: {list(sample_attachments[0].keys())}")
+            log.info(f"[Slack][debug] first attachment: {json.dumps(sample_attachments[0])[:300]}")
+        log.info(f"[Slack][debug] extracted text: {repr(extracted)}")
+    reviews = [r for r in (parse_trustpilot(m) for m in tp_messages) if r]
     log.info(f"[Slack] {len(reviews)} Trustpilot reviews parsed")
     return reviews
 
@@ -121,6 +140,7 @@ def is_trustpilot(m):
 
 
 def get_message_text(m):
+    # 1. Block Kit blocks (modern format)
     blocks = m.get("blocks") or []
     if blocks:
         parts = []
@@ -136,6 +156,19 @@ def get_message_text(m):
                         parts.append(line)
         if parts:
             return "\n".join(parts)
+
+    # 2. Legacy attachments format
+    attachments = m.get("attachments") or []
+    if attachments:
+        parts = []
+        for a in attachments:
+            chunk = "\n".join(filter(None, [a.get("pretext"), a.get("text"), a.get("fallback")]))
+            if chunk:
+                parts.append(chunk)
+        if parts:
+            return "\n".join(parts)
+
+    # 3. Plain text fallback
     return m.get("text") or ""
 
 
