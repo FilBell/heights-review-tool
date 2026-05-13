@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler
 import requests
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL   = "claude-sonnet-4-5"
+ANTHROPIC_MODEL   = "claude-sonnet-4-6"
 ANTHROPIC_URL     = "https://api.anthropic.com/v1/messages"
 
 SYSTEM_PROMPT = """You are helping Heights' Customer Care team surface customer reviews that are relevant to an upcoming brand or marketing campaign.
@@ -114,9 +114,18 @@ class handler(BaseHTTPRequestHandler):
                 },
                 timeout=55,
             )
-            resp.raise_for_status()
-        except requests.RequestException:
-            return self._json(502, {"error": "Anthropic API request failed"})
+        except requests.RequestException as e:
+            return self._json(502, {"error": "Anthropic API request failed", "detail": str(e)})
+
+        if resp.status_code >= 400:
+            try:
+                detail = resp.json()
+            except ValueError:
+                detail = resp.text[:500]
+            return self._json(502, {
+                "error":  f"Anthropic returned HTTP {resp.status_code}",
+                "detail": detail,
+            })
 
         body = resp.json()
         text = "".join(
