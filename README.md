@@ -5,10 +5,14 @@ Internal tool for searching Heights' Trustpilot and Okendo customer reviews.
 ## Local development
 
 ```bash
-pip install -r requirements.txt
-cp .env.example .env   # then fill in the tokens
+pip install -r requirements-dev.txt   # local dev (adds Flask + gunicorn)
+cp .env.example .env                   # then fill in the tokens
 python3 server.py
 ```
+
+> Production (Vercel) only installs `requirements.txt` — a minimal set covering
+> `build.py` and the `api/` serverless functions. Flask is only needed for the
+> local dev server, so it lives in `requirements-dev.txt`.
 
 Then open http://localhost:3000.
 
