@@ -1396,6 +1396,8 @@
     matchStatus.classList.toggle('error', !!isError && !!text);
   }
 
+  const MATCH_PAYLOAD_CAP = 500;
+
   async function runCampaignMatch() {
     const brief = briefInput.value.trim();
     if (!brief) {
@@ -1408,14 +1410,30 @@
       return;
     }
 
+    // Cap and slim the payload — Vercel rejects request bodies over 4.5 MB.
+    // `filtered` is already sorted by date desc, so the first N are the most recent.
+    const candidates = filtered.slice(0, MATCH_PAYLOAD_CAP).map(r => ({
+      id:      r.id,
+      name:    r.name,
+      title:   r.title,
+      body:    r.body,
+      rating:  r.rating,
+      source:  r.source,
+      date:    r.date,
+      product: r.product,
+    }));
+
     matchBtn.disabled = true;
-    setMatchStatus('Analysing reviews…');
+    const scopeNote = filtered.length > MATCH_PAYLOAD_CAP
+      ? ` (most recent ${MATCH_PAYLOAD_CAP.toLocaleString()} of ${filtered.length.toLocaleString()})`
+      : ` (${filtered.length.toLocaleString()} reviews)`;
+    setMatchStatus(`Analysing reviews…${scopeNote}`);
 
     try {
       const res = await fetch('/api/match-reviews', {
         method:  'POST',
         headers: { 'content-type': 'application/json' },
-        body:    JSON.stringify({ brief, reviews: filtered }),
+        body:    JSON.stringify({ brief, reviews: candidates }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
