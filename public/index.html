@@ -659,6 +659,135 @@
     }
     #load-more-btn:hover { border-color: rgba(255,249,239,0.45); color: var(--offwhite); }
 
+    /* ── Campaign Match ──────────────────────────────────────────────── */
+    .campaign-match {
+      background: rgba(255,249,239,0.04);
+      border: 1px solid rgba(255,249,239,0.10);
+      border-radius: 16px;
+      padding: 22px 24px 24px;
+      margin-bottom: 28px;
+    }
+
+    .campaign-match-header h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 26px;
+      letter-spacing: -0.3px;
+      line-height: 1;
+      text-transform: uppercase;
+      color: var(--electric);
+    }
+
+    .campaign-match-header p {
+      margin-top: 6px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,249,239,0.55);
+      letter-spacing: 0.01em;
+    }
+
+    #campaign-brief {
+      width: 100%;
+      background: var(--offwhite);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.55;
+      resize: vertical;
+      outline: none;
+      min-height: 96px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+      transition: box-shadow 0.15s;
+    }
+    #campaign-brief:focus { box-shadow: 0 2px 10px rgba(0,0,0,0.22), 0 0 0 3px rgba(48,97,231,0.35); }
+    #campaign-brief::placeholder { color: rgba(0,0,113,0.4); }
+
+    .campaign-match-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    #campaign-match-btn {
+      background: var(--electric);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    #campaign-match-btn:hover    { opacity: 0.9; }
+    #campaign-match-btn:active   { transform: translateY(1px); }
+    #campaign-match-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    #campaign-clear-btn {
+      background: transparent;
+      border: 1.5px solid rgba(255,249,239,0.22);
+      color: rgba(255,249,239,0.7);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    #campaign-clear-btn:hover { border-color: rgba(255,249,239,0.45); color: var(--offwhite); }
+
+    .campaign-status {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,249,239,0.6);
+    }
+    .campaign-status.error { color: #FFB8B8; }
+
+    .campaign-results { margin-top: 20px; }
+
+    .campaign-results-bar {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,249,239,0.55);
+      margin-bottom: 12px;
+    }
+    .campaign-results-bar strong { color: var(--offwhite); }
+
+    .match-card {
+      background: var(--mint);
+      box-shadow: 0 2px 12px rgba(0,0,113,0.10), 0 0 0 2px rgba(48,97,231,0.18);
+    }
+
+    .match-reason {
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: rgba(48,97,231,0.08);
+      border-left: 3px solid var(--electric);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--navy);
+      line-height: 1.5;
+    }
+    .match-reason-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--electric);
+      margin-bottom: 3px;
+    }
+
     /* ── Responsive ──────────────────────────────────────────────────── */
     @media (max-width: 640px) {
       .app-wrap { padding: 0 16px 60px; }
@@ -666,6 +795,7 @@
       .reviews-grid { grid-template-columns: 1fr; }
       .filters-row { gap: 12px; }
       .stats-bar { gap: 8px; }
+      .campaign-match { padding: 18px; }
     }
 
     /* ── Utility ─────────────────────────────────────────────────────── */
@@ -697,6 +827,29 @@
   <div class="stats-bar" id="stats-bar"></div>
 
   <!-- DATA_INJECTION_POINT -->
+
+  <!-- Campaign Match -->
+  <section class="campaign-match" id="campaign-match">
+    <div class="campaign-match-header">
+      <h2>Campaign Match</h2>
+      <p>Paste a campaign brief and we'll surface the reviews that fit the angle.</p>
+    </div>
+    <textarea
+      id="campaign-brief"
+      placeholder="Paste your campaign concept — themes you're exploring, the angle you want to land, the audience. The more context, the sharper the match."
+      rows="4"
+      spellcheck="false"
+    ></textarea>
+    <div class="campaign-match-actions">
+      <button id="campaign-match-btn" type="button">Find matching reviews</button>
+      <button id="campaign-clear-btn" type="button" class="hidden">Clear matches</button>
+      <span id="campaign-status" class="campaign-status"></span>
+    </div>
+    <div id="campaign-results" class="campaign-results hidden">
+      <div class="campaign-results-bar" id="campaign-results-count"></div>
+      <div class="reviews-grid" id="campaign-results-grid"></div>
+    </div>
+  </section>
 
   <!-- Search -->
   <div class="search-wrap">
@@ -1227,6 +1380,102 @@
         Refresh
       `;
     }
+  });
+
+  // ── Campaign Match ────────────────────────────────────────────────────────
+  const briefInput        = document.getElementById('campaign-brief');
+  const matchBtn          = document.getElementById('campaign-match-btn');
+  const matchClearBtn     = document.getElementById('campaign-clear-btn');
+  const matchStatus       = document.getElementById('campaign-status');
+  const matchResults      = document.getElementById('campaign-results');
+  const matchResultsGrid  = document.getElementById('campaign-results-grid');
+  const matchResultsCount = document.getElementById('campaign-results-count');
+
+  function setMatchStatus(text, isError = false) {
+    matchStatus.textContent = text;
+    matchStatus.classList.toggle('error', !!isError && !!text);
+  }
+
+  async function runCampaignMatch() {
+    const brief = briefInput.value.trim();
+    if (!brief) {
+      setMatchStatus('Add a brief first.', true);
+      briefInput.focus();
+      return;
+    }
+    if (!filtered.length) {
+      setMatchStatus('No reviews in the current view — broaden your filters and try again.', true);
+      return;
+    }
+
+    matchBtn.disabled = true;
+    setMatchStatus('Analysing reviews…');
+
+    try {
+      const res = await fetch('/api/match-reviews', {
+        method:  'POST',
+        headers: { 'content-type': 'application/json' },
+        body:    JSON.stringify({ brief, reviews: filtered }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      renderCampaignMatches(data.matches || []);
+      setMatchStatus('');
+    } catch (e) {
+      setMatchStatus("Couldn't analyse — try again", true);
+    } finally {
+      matchBtn.disabled = false;
+    }
+  }
+
+  function renderCampaignMatches(matches) {
+    matchResultsGrid.innerHTML = '';
+    matchResults.classList.remove('hidden');
+    matchClearBtn.classList.remove('hidden');
+
+    if (!matches.length) {
+      matchResultsCount.innerHTML = '<strong>No close matches</strong> — try a richer brief or broaden your filters.';
+      return;
+    }
+
+    const byId = new Map(allReviews.map(r => [r.id, r]));
+    const frag = document.createDocumentFragment();
+    let rendered = 0;
+    matches.forEach(m => {
+      const r = byId.get(m.reviewId);
+      if (!r) return;
+      frag.appendChild(createMatchCard(r, m));
+      rendered++;
+    });
+    matchResultsGrid.appendChild(frag);
+    matchResultsCount.innerHTML = `<strong>${rendered}</strong> matching review${rendered !== 1 ? 's' : ''}`;
+  }
+
+  function createMatchCard(r, m) {
+    const card = createCard(r);
+    card.classList.add('match-card');
+    const reason = document.createElement('div');
+    reason.className = 'match-reason';
+    const score = Number.isFinite(m.relevanceScore) ? `${m.relevanceScore}/10` : '';
+    reason.innerHTML = `
+      <span class="match-reason-label">Why this matches${score ? ' · ' + score : ''}</span>
+      ${escHtml(m.reasoning || '')}
+    `;
+    card.appendChild(reason);
+    return card;
+  }
+
+  function clearCampaignMatches() {
+    matchResults.classList.add('hidden');
+    matchClearBtn.classList.add('hidden');
+    matchResultsGrid.innerHTML = '';
+    setMatchStatus('');
+  }
+
+  matchBtn.addEventListener('click', runCampaignMatch);
+  matchClearBtn.addEventListener('click', clearCampaignMatches);
+  briefInput.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') runCampaignMatch();
   });
 
   // ── Boot ──────────────────────────────────────────────────────────────────

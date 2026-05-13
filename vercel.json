@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python3 build.py",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/match-reviews.py": {
+      "maxDuration": 60
+    }
+  }
+}

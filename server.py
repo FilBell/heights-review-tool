@@ -12,18 +12,47 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 
 load_dotenv()
 
 # ── Config ────────────────────────────────────────────────────────────────────
-PORT             = int(os.getenv("PORT", 3000))
-SLACK_TOKEN      = os.getenv("SLACK_TOKEN", "")
-OKENDO_API_KEY   = os.getenv("OKENDO_API_KEY", "fb60e365-8937-400d-90a1-9fc782131d41")
-SLACK_CHANNEL_ID = "C07UNRQLTL7"
-CACHE_TTL        = int(os.getenv("CACHE_TTL_MINUTES", 60)) * 60  # seconds
-CACHE_DIR        = Path(__file__).parent / "cache"
+PORT              = int(os.getenv("PORT", 3000))
+SLACK_TOKEN       = os.getenv("SLACK_TOKEN", "")
+OKENDO_API_KEY    = os.getenv("OKENDO_API_KEY", "fb60e365-8937-400d-90a1-9fc782131d41")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL   = "claude-sonnet-4-5"
+ANTHROPIC_URL     = "https://api.anthropic.com/v1/messages"
+SLACK_CHANNEL_ID  = "C07UNRQLTL7"
+CACHE_TTL         = int(os.getenv("CACHE_TTL_MINUTES", 60)) * 60  # seconds
+CACHE_DIR         = Path(__file__).parent / "cache"
 CACHE_DIR.mkdir(exist_ok=True)
+
+MATCH_SYSTEM_PROMPT = """You are helping Heights' Customer Care team surface customer reviews that are relevant to an upcoming brand or marketing campaign.
+
+You will be given:
+1. A campaign brief (themes, angle, target audience)
+2. A JSON array of customer reviews (author, rating, source, date, body, productName, reviewId)
+
+Your job:
+- Identify which reviews best support the campaign brief
+- Consider thematic alignment, not just keyword matches (e.g. a review about "waking up clearer" is relevant to a campaign about "morning energy" even if it doesn't say "energy")
+- Consider sentiment fit (positive campaigns generally want positive reviews; reviews discussing transformation/journey can support empowerment-led campaigns even with mixed sentiment)
+- Surface reviews that could yield quotable, on-brand customer voice for marketing use
+- Use British English in all reasoning
+
+Return ONLY a JSON object with this exact shape, no preamble or markdown:
+{
+  "matches": [
+    {
+      "reviewId": "string — the original reviewId",
+      "relevanceScore": number 1-10,
+      "reasoning": "one sentence explaining the match in British English"
+    }
+  ]
+}
+
+Include only reviews scoring 6 or higher. Return up to 15 matches. If no reviews score 6+, return an empty matches array."""
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
@@ -366,6 +395,80 @@ def api_refresh():
         _state["status"]  = "idle"
     load_data(force=True)
     return jsonify({"status": "refreshing"})
+
+
+# ── Campaign Match ────────────────────────────────────────────────────────────
+@app.route("/api/match-reviews", methods=["POST"])
+def api_match_reviews():
+    if not ANTHROPIC_API_KEY:
+        return jsonify({"error": "ANTHROPIC_API_KEY not configured"}), 500
+
+    payload = request.get_json(silent=True) or {}
+    brief   = (payload.get("brief") or "").strip()
+    reviews = payload.get("reviews") or []
+
+    if not brief:
+        return jsonify({"error": "Missing brief"}), 400
+    if not reviews:
+        return jsonify({"matches": []})
+
+    review_payload = [
+        {
+            "reviewId":    r.get("id", ""),
+            "author":      r.get("name", ""),
+            "rating":      r.get("rating", 0),
+            "source":      r.get("source", ""),
+            "date":        r.get("date", ""),
+            "body":        r.get("body", ""),
+            "productName": r.get("product", ""),
+        }
+        for r in reviews
+    ]
+
+    user_message = (
+        f"Campaign brief:\n{brief}\n\n"
+        f"Reviews (JSON):\n{json.dumps(review_payload, ensure_ascii=False)}"
+    )
+
+    try:
+        resp = requests.post(
+            ANTHROPIC_URL,
+            headers={
+                "x-api-key":         ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type":      "application/json",
+            },
+            json={
+                "model":      ANTHROPIC_MODEL,
+                "max_tokens": 4000,
+                "system":     MATCH_SYSTEM_PROMPT,
+                "messages":   [{"role": "user", "content": user_message}],
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        log.error(f"[Match] Anthropic API call failed: {e}")
+        return jsonify({"error": "Anthropic API request failed"}), 502
+
+    body = resp.json()
+    text_blocks = [b.get("text", "") for b in body.get("content", []) if b.get("type") == "text"]
+    raw = "".join(text_blocks).strip()
+
+    # Strip accidental code fences in case the model adds them despite the system prompt
+    if raw.startswith("```"):
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as e:
+        log.error(f"[Match] Could not parse model response: {e}; raw={raw[:300]}")
+        return jsonify({"error": "Could not parse model response"}), 502
+
+    matches = parsed.get("matches") or []
+    matches.sort(key=lambda m: m.get("relevanceScore", 0), reverse=True)
+    return jsonify({"matches": matches[:15]})
 
 
 # ── Boot ──────────────────────────────────────────────────────────────────────
