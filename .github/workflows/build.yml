@@ -19,6 +19,7 @@ concurrency:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -45,3 +46,32 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          CHANNEL:         ${{ secrets.SLACK_ALERT_CHANNEL_ID }}
+          WORKFLOW:        ${{ github.workflow }}
+          REPO:            ${{ github.repository }}
+          RUN_URL:         ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          if [ -z "${SLACK_BOT_TOKEN:-}" ] || [ -z "${CHANNEL:-}" ]; then
+            echo "::error::Failure alert not configured — set SLACK_BOT_TOKEN and SLACK_ALERT_CHANNEL_ID"
+            exit 1
+          fi
+          IMPACT="The review search site was not rebuilt. The previously deployed site stays live, so it is silently STALE rather than down. Re-running is safe."
+          body=$(jq -n --arg c "$CHANNEL" --arg w "$WORKFLOW" --arg r "$REPO" \
+                       --arg u "$RUN_URL" --arg i "$IMPACT" \
+            '{channel:$c,
+              text:(":rotating_light: *" + $w + "* failed — `" + $r + "`\n"
+                    + $i + "\n<" + $u + "|Open the failed run>"),
+              unfurl_links:false, unfurl_media:false}')
+          resp=$(curl -sS -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-type: application/json; charset=utf-8" \
+            -d "$body")
+          echo "$resp"
+          echo "$resp" | grep -q '"ok":true' \
+            || { echo "::error::Slack alert failed to post"; exit 1; }
