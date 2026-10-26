@@ -788,6 +788,264 @@
       margin-bottom: 3px;
     }
 
+    /* ── View tabs ───────────────────────────────────────────────────── */
+    .view-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255,249,239,0.12);
+    }
+
+    .view-tab {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+      color: rgba(255,249,239,0.55);
+      padding: 10px 16px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .view-tab:hover { color: var(--offwhite); }
+    .view-tab.active { color: var(--offwhite); border-bottom-color: var(--electric); }
+
+    .view-tab-count {
+      background: rgba(255,249,239,0.12);
+      border-radius: 100px;
+      padding: 1px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .view-tab.active .view-tab-count { background: var(--electric); color: #fff; }
+
+    /* ── Bookmark bar (Bookmarked tab) ───────────────────────────────── */
+    .bookmark-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .bookmark-tag-filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .bookmark-tag-filters .filter-btn { display: inline-flex; align-items: center; gap: 6px; }
+    .bookmark-tag-filters .filter-btn.active { background: var(--electric); border-color: var(--electric); color: #fff; }
+    .bookmark-tag-filters .tag-count { opacity: 0.6; font-weight: 500; }
+
+    .bookmark-actions { display: flex; gap: 8px; }
+
+    .bookmark-action-btn {
+      background: transparent;
+      border: 1.5px solid rgba(255,249,239,0.2);
+      color: rgba(255,249,239,0.6);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .bookmark-action-btn:hover { border-color: rgba(255,249,239,0.5); color: var(--offwhite); }
+
+    .bookmark-note {
+      width: 100%;
+      font-size: 12px;
+      color: rgba(255,249,239,0.4);
+    }
+
+    /* ── Bookmark button + tags on cards ─────────────────────────────── */
+    .card-top-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .bookmark-btn {
+      background: transparent;
+      border: none;
+      padding: 2px;
+      margin: -2px;
+      cursor: pointer;
+      color: rgba(0,0,113,0.3);
+      display: flex;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .bookmark-btn:hover { color: var(--electric); background: rgba(48,97,231,0.08); }
+    .bookmark-btn svg { width: 18px; height: 18px; }
+    .bookmark-btn.saved { color: var(--electric); }
+    .bookmark-btn.saved svg { fill: currentColor; }
+
+    .card-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(48,97,231,0.1);
+      color: var(--electric);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* ── Bookmark dialog ─────────────────────────────────────────────── */
+    .bm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,40,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .bm-dialog {
+      background: var(--offwhite);
+      color: var(--text-dark);
+      border-radius: 16px;
+      padding: 22px 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.35);
+    }
+
+    .bm-dialog h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 24px;
+      text-transform: uppercase;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .bm-review-preview {
+      margin: 10px 0 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .bm-review-preview strong { color: var(--text-dark); }
+
+    .bm-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .bm-tag-input-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 7px 9px;
+      cursor: text;
+    }
+    .bm-tag-input-wrap:focus-within { border-color: var(--electric); box-shadow: 0 0 0 3px rgba(48,97,231,0.2); }
+
+    .bm-tag-input-wrap .tag-chip button {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.6;
+    }
+    .bm-tag-input-wrap .tag-chip button:hover { opacity: 1; }
+
+    #bm-tag-input {
+      flex: 1;
+      min-width: 120px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      padding: 3px 2px;
+    }
+
+    .bm-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .bm-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .bm-suggestions:empty { display: none; }
+
+    .bm-suggestion {
+      background: transparent;
+      border: 1.5px dashed rgba(48,97,231,0.4);
+      color: var(--electric);
+      border-radius: 100px;
+      padding: 2px 10px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .bm-suggestion:hover { background: rgba(48,97,231,0.08); }
+
+    .bm-dialog-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .bm-btn {
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .bm-btn-primary { background: var(--electric); color: #fff; }
+    .bm-btn-primary:hover { opacity: 0.9; }
+    .bm-btn-secondary { background: transparent; color: var(--text-muted); }
+    .bm-btn-secondary:hover { color: var(--text-dark); }
+    .bm-btn-danger { background: transparent; color: var(--red); margin-right: auto; padding-left: 0; }
+    .bm-btn-danger:hover { text-decoration: underline; }
+
     /* ── Responsive ──────────────────────────────────────────────────── */
     @media (max-width: 640px) {
       .app-wrap { padding: 0 16px 60px; }
@@ -831,6 +1089,14 @@ window.__HEIGHTS_REVIEWS__ = [{"id":"okendo_b7360d73-f433-4f7c-a6c6-400577da77dd
 window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
 </script>
 
+  <!-- View tabs -->
+  <nav class="view-tabs" role="tablist">
+    <button class="view-tab active" data-view="all" role="tab" type="button">All reviews</button>
+    <button class="view-tab" data-view="bookmarked" role="tab" type="button">
+      Bookmarked <span class="view-tab-count" id="bookmark-count">0</span>
+    </button>
+  </nav>
+
   <!-- Campaign Match -->
   <section class="campaign-match" id="campaign-match">
     <div class="campaign-match-header">
@@ -863,7 +1129,7 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
     <input
       id="search-input"
       type="text"
-      placeholder="Search reviews by keyword, e.g. "sleep", "energy", "Alex"…"
+      placeholder="Search reviews by keyword, e.g. “sleep”, “energy”, “Alex”…"
       autocomplete="off"
       spellcheck="false"
     >
@@ -871,7 +1137,7 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
   </div>
 
   <!-- Filters -->
-  <div class="filters-row">
+  <div class="filters-row" id="filters-row">
     <div class="filter-group">
       <span class="filter-label">Source</span>
       <button class="filter-btn active" data-filter="source" data-value="all">All</button>
@@ -917,6 +1183,20 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
     </div>
   </div>
 
+  <!-- Bookmark bar (Bookmarked tab only) -->
+  <div class="bookmark-bar hidden" id="bookmark-bar">
+    <div class="bookmark-tag-filters">
+      <span class="filter-label">Tag</span>
+      <div class="bookmark-tag-filters" id="bookmark-tag-filters"></div>
+    </div>
+    <div class="bookmark-actions">
+      <button class="bookmark-action-btn" id="bookmark-export" type="button">Export</button>
+      <button class="bookmark-action-btn" id="bookmark-import" type="button">Import</button>
+      <input type="file" id="bookmark-import-file" accept="application/json,.json" hidden>
+    </div>
+    <div class="bookmark-note">Bookmarks are saved in this browser only. Use Export / Import to move them to another browser or share them with a teammate.</div>
+  </div>
+
   <!-- Results bar -->
   <div class="results-bar" id="results-bar" style="display:none;">
     <div class="results-count" id="results-count"></div>
@@ -952,6 +1232,25 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
         <div class="empty-sub">Try different keywords or adjust your filters</div>
       </div>
       <button id="load-more-btn" class="hidden">Load more</button>
+    </div>
+  </div>
+
+  <!-- Bookmark dialog -->
+  <div class="bm-overlay hidden" id="bm-overlay">
+    <div class="bm-dialog" role="dialog" aria-modal="true" aria-labelledby="bm-title">
+      <h3 id="bm-title">Bookmark review</h3>
+      <div class="bm-review-preview" id="bm-preview"></div>
+      <label class="bm-label" for="bm-tag-input">Tags (optional)</label>
+      <div class="bm-tag-input-wrap" id="bm-tag-wrap">
+        <input id="bm-tag-input" type="text" placeholder="e.g. sleep, for-ads, ugc" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="bm-hint">Press Enter or comma to add a tag.</div>
+      <div class="bm-suggestions" id="bm-suggestions"></div>
+      <div class="bm-dialog-actions">
+        <button class="bm-btn bm-btn-danger hidden" id="bm-remove" type="button">Remove bookmark</button>
+        <button class="bm-btn bm-btn-secondary" id="bm-cancel" type="button">Cancel</button>
+        <button class="bm-btn bm-btn-primary" id="bm-save" type="button">Save</button>
+      </div>
     </div>
   </div>
 
@@ -1180,6 +1479,25 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
   function applyFilters() {
     const q = query.toLowerCase().trim();
 
+    if (currentView === 'bookmarked') {
+      filtered = bookmarkedReviews().filter(r => {
+        const bm = bookmarks[r.id];
+        if (tagFilter === UNTAGGED && bm.tags.length) return false;
+        if (tagFilter && tagFilter !== UNTAGGED && !bm.tags.some(t => t.toLowerCase() === tagFilter)) return false;
+        if (q) {
+          const hay = `${r.name} ${r.title} ${r.body} ${bm.tags.join(' ')}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      shown = 0;
+      reviewsGrid.innerHTML = '';
+      emptyState.style.display = 'none';
+      renderResultsBar();
+      renderNextPage();
+      return;
+    }
+
     filtered = allReviews.filter(r => {
       if (sourceFilter    !== 'all' && r.source    !== sourceFilter)    return false;
       if (sentimentFilter !== 'all' && r.sentiment !== sentimentFilter) return false;
@@ -1227,6 +1545,12 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
     shown += slice.length;
 
     if (shown === 0 && filtered.length === 0) {
+      const noBookmarks = currentView === 'bookmarked' && !Object.keys(bookmarks).length;
+      emptyState.querySelector('.empty-icon').textContent  = noBookmarks ? '🔖' : '🔍';
+      emptyState.querySelector('.empty-title').textContent = noBookmarks ? 'No bookmarks yet' : 'No reviews match your search';
+      emptyState.querySelector('.empty-sub').textContent   = noBookmarks
+        ? 'Click the bookmark icon on any review to save it here'
+        : 'Try different keywords or adjust your filters';
       emptyState.style.display = 'block';
       loadMoreBtn.classList.add('hidden');
     } else if (shown >= filtered.length) {
@@ -1265,8 +1589,12 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
     div.innerHTML = `
       <div class="card-top">
         <div class="card-badges">${sourceBadge}${sentBadge}</div>
-        <div class="card-stars">${renderStars(r.rating)}</div>
+        <div class="card-top-right">
+          <div class="card-stars">${renderStars(r.rating)}</div>
+          <button class="bookmark-btn" type="button" data-bookmark-id="${escHtml(r.id)}">${BOOKMARK_ICON}</button>
+        </div>
       </div>
+      <div class="card-tags" data-tags-for="${escHtml(r.id)}"></div>
       <div class="card-name">${name}</div>
       <div class="card-title">&ldquo;${title}&rdquo;</div>
       ${product}
@@ -1276,7 +1604,20 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
         ${verBadge}
       </div>
     `;
+    div.querySelector('.bookmark-btn').addEventListener('click', () => openBookmarkDialog(r));
+    syncCardBookmark(div, r.id);
     return div;
+  }
+
+  function syncCardBookmark(card, id) {
+    const bm  = bookmarks[id];
+    const btn = card.querySelector('.bookmark-btn');
+    btn.classList.toggle('saved', !!bm);
+    btn.title = bm ? 'Edit bookmark' : 'Bookmark this review';
+    btn.setAttribute('aria-label', btn.title);
+    const tagsEl = card.querySelector('.card-tags');
+    tagsEl.innerHTML = bm ? bm.tags.map(t => `<span class="tag-chip">${escHtml(t)}</span>`).join('') : '';
+    tagsEl.classList.toggle('hidden', !bm || !bm.tags.length);
   }
 
   function renderStars(n) {
@@ -1498,6 +1839,277 @@ window.__HEIGHTS_BUILT_AT__ = "2026-05-13T17:56:03.716969+00:00";
   briefInput.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') runCampaignMatch();
   });
+
+  // ── Bookmarks ─────────────────────────────────────────────────────────────
+  // Stored per-browser in localStorage: { [reviewId]: { review, tags, savedAt } }.
+  // A snapshot of the review is kept so a bookmark survives the review dropping
+  // out of a future build.
+  const BOOKMARK_KEY = 'heights-review-bookmarks-v1';
+  const UNTAGGED     = '__untagged__';
+  const BOOKMARK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+
+  let bookmarks   = loadBookmarks();
+  let currentView = 'all';
+  let tagFilter   = ''; // '' = all tags, UNTAGGED, or a lower-cased tag
+
+  const bookmarkCount      = document.getElementById('bookmark-count');
+  const bookmarkBar        = document.getElementById('bookmark-bar');
+  const bookmarkTagFilters = document.getElementById('bookmark-tag-filters');
+  const filtersRow         = document.getElementById('filters-row');
+  const campaignSection    = document.getElementById('campaign-match');
+  const bmOverlay     = document.getElementById('bm-overlay');
+  const bmTitle       = document.getElementById('bm-title');
+  const bmPreview     = document.getElementById('bm-preview');
+  const bmTagWrap     = document.getElementById('bm-tag-wrap');
+  const bmTagInput    = document.getElementById('bm-tag-input');
+  const bmSuggestions = document.getElementById('bm-suggestions');
+  const bmRemove      = document.getElementById('bm-remove');
+  const bmSave        = document.getElementById('bm-save');
+  const bmCancel      = document.getElementById('bm-cancel');
+
+  function loadBookmarks() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '{}');
+      if (!raw || typeof raw !== 'object') return {};
+      return Object.fromEntries(Object.entries(raw).filter(([, bm]) => bm && bm.review && Array.isArray(bm.tags)));
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveBookmarks() {
+    try {
+      localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+    } catch (e) {
+      alert("Couldn't save bookmarks in this browser (storage may be blocked or full).");
+    }
+  }
+
+  function bookmarkedReviews() {
+    const live = new Map(allReviews.map(r => [r.id, r]));
+    return Object.entries(bookmarks)
+      .sort((a, b) => (b[1].savedAt || '').localeCompare(a[1].savedAt || ''))
+      .map(([id, bm]) => live.get(id) || bm.review)
+      .filter(Boolean);
+  }
+
+  // All distinct tags (first-seen casing wins), with how many bookmarks use each.
+  function allTags() {
+    const tags = new Map();
+    Object.values(bookmarks).forEach(bm => bm.tags.forEach(t => {
+      const key = t.toLowerCase();
+      if (!tags.has(key)) tags.set(key, { label: t, count: 0 });
+      tags.get(key).count++;
+    }));
+    return [...tags.entries()].sort((a, b) => a[1].label.localeCompare(b[1].label));
+  }
+
+  function refreshBookmarkUI() {
+    bookmarkCount.textContent = Object.keys(bookmarks).length.toLocaleString();
+    if (tagFilter && tagFilter !== UNTAGGED && !allTags().some(([k]) => k === tagFilter)) tagFilter = '';
+    renderTagFilters();
+    document.querySelectorAll('.review-card').forEach(card => {
+      const btn = card.querySelector('.bookmark-btn');
+      if (btn) syncCardBookmark(card, btn.dataset.bookmarkId);
+    });
+    if (currentView === 'bookmarked') applyFilters();
+  }
+
+  function renderTagFilters() {
+    const tags = allTags();
+    const untagged = Object.values(bookmarks).filter(bm => !bm.tags.length).length;
+    const btn = (value, label, count) => `
+      <button class="filter-btn ${tagFilter === value ? 'active' : ''}" type="button" data-tag="${escHtml(value)}">
+        ${escHtml(label)} <span class="tag-count">${count}</span>
+      </button>`;
+    bookmarkTagFilters.innerHTML =
+      btn('', 'All', Object.keys(bookmarks).length) +
+      tags.map(([key, t]) => btn(key, t.label, t.count)).join('') +
+      (untagged && tags.length ? btn(UNTAGGED, 'Untagged', untagged) : '');
+    bookmarkTagFilters.querySelectorAll('[data-tag]').forEach(b => {
+      b.addEventListener('click', () => {
+        tagFilter = b.dataset.tag;
+        renderTagFilters();
+        applyFilters();
+      });
+    });
+  }
+
+  function setView(view) {
+    currentView = view;
+    document.querySelectorAll('.view-tab').forEach(t => {
+      const active = t.dataset.view === view;
+      t.classList.toggle('active', active);
+      t.setAttribute('aria-selected', active);
+    });
+    const bm = view === 'bookmarked';
+    bookmarkBar.classList.toggle('hidden', !bm);
+    filtersRow.classList.toggle('hidden', bm);
+    campaignSection.classList.toggle('hidden', bm);
+    searchInput.placeholder = bm
+      ? 'Search bookmarks by keyword or tag…'
+      : 'Search reviews by keyword, e.g. “sleep”, “energy”, “Alex”…';
+    renderTagFilters();
+    applyFilters();
+  }
+
+  document.querySelectorAll('.view-tab').forEach(t => {
+    t.addEventListener('click', () => setView(t.dataset.view));
+  });
+
+  // ── Bookmark dialog ──
+  let dialogReview = null;
+  let dialogTags   = [];
+
+  function openBookmarkDialog(r) {
+    dialogReview = r;
+    const existing = bookmarks[r.id];
+    dialogTags = existing ? [...existing.tags] : [];
+    bmTitle.textContent = existing ? 'Edit bookmark' : 'Bookmark review';
+    bmRemove.classList.toggle('hidden', !existing);
+    const snippet = (r.title || r.body || '').slice(0, 120);
+    bmPreview.innerHTML = `<strong>${escHtml(r.name)}</strong> · ${r.rating}★ · ${escHtml(snippet)}${snippet.length >= 120 ? '…' : ''}`;
+    bmTagInput.value = '';
+    renderDialogTags();
+    bmOverlay.classList.remove('hidden');
+    bmTagInput.focus();
+  }
+
+  function closeBookmarkDialog() {
+    bmOverlay.classList.add('hidden');
+    dialogReview = null;
+  }
+
+  function addDialogTag(raw) {
+    const tag = raw.trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (tag && !dialogTags.some(t => t.toLowerCase() === tag.toLowerCase())) dialogTags.push(tag);
+  }
+
+  function commitTagInput() {
+    bmTagInput.value.split(',').forEach(addDialogTag);
+    bmTagInput.value = '';
+    renderDialogTags();
+  }
+
+  function renderDialogTags() {
+    bmTagWrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    dialogTags.forEach((t, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${escHtml(t)} <button type="button" aria-label="Remove tag ${escHtml(t)}">×</button>`;
+      chip.querySelector('button').addEventListener('click', e => {
+        e.stopPropagation();
+        dialogTags.splice(i, 1);
+        renderDialogTags();
+      });
+      bmTagWrap.insertBefore(chip, bmTagInput);
+    });
+
+    // Suggest existing tags not already on this review
+    const chosen = new Set(dialogTags.map(t => t.toLowerCase()));
+    const typed  = bmTagInput.value.trim().toLowerCase();
+    const suggestions = allTags()
+      .filter(([key]) => !chosen.has(key) && (!typed || key.includes(typed)))
+      .slice(0, 12);
+    bmSuggestions.innerHTML = suggestions
+      .map(([, t]) => `<button class="bm-suggestion" type="button" data-label="${escHtml(t.label)}">+ ${escHtml(t.label)}</button>`)
+      .join('');
+    bmSuggestions.querySelectorAll('.bm-suggestion').forEach(b => {
+      b.addEventListener('click', () => {
+        addDialogTag(b.dataset.label);
+        bmTagInput.value = '';
+        renderDialogTags();
+        bmTagInput.focus();
+      });
+    });
+  }
+
+  bmTagWrap.addEventListener('click', () => bmTagInput.focus());
+
+  bmTagInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (bmTagInput.value.trim()) commitTagInput();
+      else bmSave.click();
+    } else if (e.key === ',') {
+      e.preventDefault();
+      commitTagInput();
+    } else if (e.key === 'Backspace' && !bmTagInput.value && dialogTags.length) {
+      dialogTags.pop();
+      renderDialogTags();
+    }
+  });
+
+  bmTagInput.addEventListener('input', renderDialogTags);
+
+  bmSave.addEventListener('click', () => {
+    if (!dialogReview) return;
+    commitTagInput();
+    const existing = bookmarks[dialogReview.id];
+    bookmarks[dialogReview.id] = {
+      review:  dialogReview,
+      tags:    [...dialogTags],
+      savedAt: existing ? existing.savedAt : new Date().toISOString(),
+    };
+    saveBookmarks();
+    closeBookmarkDialog();
+    refreshBookmarkUI();
+  });
+
+  bmRemove.addEventListener('click', () => {
+    if (!dialogReview) return;
+    delete bookmarks[dialogReview.id];
+    saveBookmarks();
+    closeBookmarkDialog();
+    refreshBookmarkUI();
+  });
+
+  bmCancel.addEventListener('click', closeBookmarkDialog);
+  bmOverlay.addEventListener('click', e => { if (e.target === bmOverlay) closeBookmarkDialog(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !bmOverlay.classList.contains('hidden')) closeBookmarkDialog();
+  });
+
+  // ── Export / import ──
+  document.getElementById('bookmark-export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(bookmarks, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `heights-review-bookmarks-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  const importFile = document.getElementById('bookmark-import-file');
+  document.getElementById('bookmark-import').addEventListener('click', () => importFile.click());
+  importFile.addEventListener('change', async () => {
+    const file = importFile.files[0];
+    importFile.value = '';
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      let added = 0;
+      Object.entries(data).forEach(([id, bm]) => {
+        if (!bm || !bm.review || !Array.isArray(bm.tags)) return;
+        const existing = bookmarks[id];
+        if (existing) {
+          // Merge tags rather than overwrite
+          const seen = new Set(existing.tags.map(t => t.toLowerCase()));
+          bm.tags.forEach(t => { if (!seen.has(String(t).toLowerCase())) existing.tags.push(String(t)); });
+        } else {
+          bookmarks[id] = { review: bm.review, tags: bm.tags.map(String), savedAt: bm.savedAt || new Date().toISOString() };
+          added++;
+        }
+      });
+      saveBookmarks();
+      refreshBookmarkUI();
+      alert(`Imported ${added} new bookmark${added !== 1 ? 's' : ''}.`);
+    } catch (e) {
+      alert("That file couldn't be read as a bookmarks export.");
+    }
+  });
+
+  bookmarkCount.textContent = Object.keys(bookmarks).length.toLocaleString();
 
   // ── Boot ──────────────────────────────────────────────────────────────────
   if (window.__HEIGHTS_REVIEWS__) {
